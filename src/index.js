@@ -9,6 +9,7 @@ const path = require("path");
 const { v2: cloudinary } = require("cloudinary");
 
 const routes = require("./routes/index");
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -37,6 +38,31 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
 });
 
-app.listen(8000, () => {
-  console.log("server running on localhost:8000");
+const PORT = process.env.PORT || 8000;
+const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+
+app.listen(PORT, () => {
+  console.log(`Server running on ${BACKEND_URL}`);
 });
+
+// ✅ Self-pinging to prevent the server from sleeping
+const PING_INTERVAL = 14.5 * 60 * 1000; // 14 minutes 30 seconds
+
+const selfPing = async () => {
+  try {
+    console.log("Pinging server to keep it awake...");
+    const response = await fetch(BACKEND_URL);
+    if (!response.ok) {
+      throw new Error(`Ping failed with status: ${response.status}`);
+    }
+    console.log("Ping successful!");
+  } catch (error) {
+    console.error("Error self-pinging:", error.message);
+  }
+};
+
+// Start self-pinging after 30 seconds and repeat every 14m 30s
+setTimeout(() => {
+  selfPing();
+  setInterval(selfPing, PING_INTERVAL);
+}, 30000); // Wait 30 seconds before first ping
