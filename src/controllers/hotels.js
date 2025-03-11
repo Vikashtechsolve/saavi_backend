@@ -1,4 +1,4 @@
-const Hotel = require("../models/hotel");
+const { Hotel } = require("../models/hotel");
 const { validationResult } = require("express-validator");
 const cloudinary = require("cloudinary").v2;
 const { ObjectId } = require("mongodb");

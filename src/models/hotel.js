@@ -6,8 +6,14 @@ const bookingSchema = new mongoose.Schema({
   email: { type: String, required: true },
   checkIn: { type: Date, required: true },
   checkOut: { type: Date, required: true },
-  userId: { type: String, required: true },
-  totalCost: { type: Number, required: true },
+  cost: { type: Number, required: true },
+  destination: { type: String, required: true },
+  hotelId: { type: String, required: true },
+  rooms: { type: Number, required: true },
+  guests: { type: Number, required: true },
+  bookingDate: { type: Date, required: true },
+  type: { type: String, required: true },
+  promoCode: { type: String, required: false },
 });
 
 const hotelSchema = new mongoose.Schema({
@@ -19,6 +25,16 @@ const hotelSchema = new mongoose.Schema({
   country: { type: String, required: true },
   location: { type: String, required: false },
   description: { type: String, required: true },
+  // roomType: [
+  //   {
+  //     type: {
+  //       type: String,
+  //       enum: ["deluxe", "standard", "suite"],
+  //       required: true,
+  //     },
+  //     price: { type: Number, required: true },
+  //   },
+  // ],
   type: [{ type: String, required: true }],
   rating: { type: Number, required: false },
   facilities: [{ type: String, required: true }],
@@ -26,8 +42,8 @@ const hotelSchema = new mongoose.Schema({
   homeImageUrl: [{ type: String, required: false }],
   imageUrls: [{ type: String, required: true }],
   lastUpdated: { type: Date, required: true },
-  bookings: [bookingSchema],
 });
 
 const Hotel = mongoose.model("Hotel", hotelSchema);
-module.exports = Hotel;
+const Booking = mongoose.model("Booking", bookingSchema);
+module.exports = { Hotel, Booking };

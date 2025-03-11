@@ -19,4 +19,4 @@ const formatResponse = (data) => {
   return data;
 };
 
-module.exports = formatResponse;
+module.exports = { formatResponse };
