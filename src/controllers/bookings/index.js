@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
-const { Booking } = require("../../models/hotel");
+const { Booking, Hotel } = require("../../models/hotel");
 const { ObjectId } = require("mongodb");
+const { default: mongoose } = require("mongoose");
 
 exports.getBookings = async (req, res) => {
   try {
@@ -33,23 +34,33 @@ exports.getBookingById = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
+  const bookingId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+    return res.status(400).json({ message: "Invalid Booking ID format" });
+  }
+
   try {
-    const bookingId = req.params.id;
-
-    if (!ObjectId.isValid(bookingId)) {
-      return res.status(400).json({ message: "Invalid Booking ID format" });
-    }
-
     const booking = await Booking.findById(bookingId).lean();
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    res.json(booking);
+    const hotel = await Hotel.findById(booking.hotelId).lean();
+
+    const hotelName = hotel?.name || "Unknown Hotel";
+
+    // Add hotelName to response
+    const response = {
+      ...booking,
+      hotelName,
+    };
+
+    return res.json(response);
   } catch (error) {
     console.error("Error fetching booking:", error);
-    res.status(500).json({ message: "Error fetching booking" });
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
