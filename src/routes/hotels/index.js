@@ -96,6 +96,7 @@ router.get(
     const objectId = new ObjectId(hotelId);
     try {
       const hotel = await Hotel.findById(objectId);
+      
       res.json(hotel);
     } catch (error) {
       console.log(error);
@@ -156,77 +157,129 @@ router.post(
   "/add-hotel",
   upload.fields([
     { name: "imageFiles", maxCount: 6 },
-    { name: "homeImageUrl", maxCount: 1 }, // ✅ Ensure correct handling of homeImageUrl
+    { name: "homeImageUrl", maxCount: 1 },
   ]),
   [
     body("name").notEmpty().withMessage("Name is required"),
-    body("address").notEmpty().withMessage("Address is required"), // ✅ Added
+    body("homeDescription").notEmpty().withMessage("Home Description is required"),
+    body("address").notEmpty().withMessage("Address is required"),
     body("city").notEmpty().withMessage("City is required"),
-    body("state").notEmpty().withMessage("State is required"), // ✅ Added
-    body("location").notEmpty().withMessage("Location is required"), // ✅ Added
+    body("state").notEmpty().withMessage("State is required"),
+    body("location").notEmpty().withMessage("Location is required"),
     body("country").notEmpty().withMessage("Country is required"),
     body("description").notEmpty().withMessage("Description is required"),
-    body("type")
+
+    // Amenities check
+    body("amenities")
       .notEmpty()
-      .withMessage("Hotel type is required")
+      .withMessage("Amenities are required")
       .custom((value, { req }) => {
         if (typeof value === "string") {
           try {
-            // Convert comma-separated string to an array
-            req.body.type = value.split(",").map((item) => item.trim());
-          } catch (error) {
-            throw new Error("Invalid type format");
+            req.body.amenities = value.split(",").map((item) => item.trim());
+          } catch (err) {
+            throw new Error("Invalid amenities format");
           }
         }
 
-        // Ensure it's now an array and meets validation criteria
         if (
-          !Array.isArray(req.body.type) ||
-          req.body.type.length === 0 ||
-          !req.body.type.every(
-            (item) => typeof item === "string" && item.trim().length > 0
-          )
+          !Array.isArray(req.body.amenities) ||
+          req.body.amenities.length === 0 ||
+          !req.body.amenities.every((item) => typeof item === "string" && item.trim() !== "")
         ) {
-          throw new Error("Each type must be a non-empty string");
+          throw new Error("Each amenity must be a non-empty string");
         }
 
         return true;
       }),
 
+    // Type
+    body("type")
+      .notEmpty()
+      .withMessage("Hotel type is required")
+      .custom((value, { req }) => {
+        if (typeof value === "string") {
+          req.body.type = value.split(",").map((item) => item.trim());
+        }
+        if (
+          !Array.isArray(req.body.type) ||
+          req.body.type.length === 0 ||
+          !req.body.type.every((item) => typeof item === "string" && item.trim() !== "")
+        ) {
+          throw new Error("Each type must be a non-empty string");
+        }
+        return true;
+      }),
+
+    // Rating
     body("rating")
       .notEmpty()
-
-      .withMessage("Rating must be a string")
+      .withMessage("Rating is required")
       .custom((value, { req }) => {
-        req.body.rating = Number(value);
+        const number = Number(value);
+        if (isNaN(number)) throw new Error("Rating must be a number");
+        req.body.rating = number;
         return true;
-      }), // ✅ Added
-    body("pricePerNight")
-      .notEmpty()
-      .isNumeric()
-      .withMessage("Price per night is required and must be a number"),
+      }),
+
+    // Facilities
     body("facilities")
       .notEmpty()
       .withMessage("Facilities are required")
       .custom((value, { req }) => {
         if (typeof value === "string") {
-          try {
-            // Convert comma-separated string to an array
-            req.body.facilities = value.split(",").map((item) => item.trim());
-          } catch (error) {
-            throw new Error("Invalid facilities format");
-          }
+          req.body.facilities = value.split(",").map((item) => item.trim());
         }
-
-        // Ensure it's now an array and meets validation criteria
         if (
           !Array.isArray(req.body.facilities) ||
           req.body.facilities.length === 0 ||
-          !req.body.facilities.every(
-            (item) => typeof item === "string" && item.trim().length > 0
-          )
+          !req.body.facilities.every((item) => typeof item === "string" && item.trim() !== "")
         ) {
           throw new Error("Each facility must be a non-empty string");
+        }
+        return true;
+      }),
+
+    // Price per night
+    body("pricePerNight")
+      .notEmpty()
+      .withMessage("Price per night is required")
+      .isNumeric()
+      .withMessage("Price must be a number"),
+
+    // Rate plans validation
+    body("ratePlans")
+      .notEmpty()
+      .withMessage("Rate plans are required")
+      .custom((value, { req }) => {
+        if (typeof value === "string") {
+          try {
+            req.body.ratePlans = JSON.parse(value);
+          } catch (err) {
+            throw new Error("Invalid ratePlans JSON format");
+          }
+        }
+
+        const plans = req.body.ratePlans;
+
+        if (!Array.isArray(plans) || plans.length === 0) {
+          throw new Error("Rate plans must be a non-empty array");
+        }
+
+        const requiredFields = ["id", "name", "code", "description", "price"];
+
+        for (const plan of plans) {
+          for (const field of requiredFields) {
+            if (!plan[field] || plan[field].toString().trim() === "") {
+              throw new Error(`Rate plan field '${field}' is required`);
+            }
+          }
+
+          if (isNaN(Number(plan.price))) {
+            throw new Error("Rate plan 'price' must be a number");
+          }
+
+          plan.price = Number(plan.price); // ensure number
         }
 
         return true;
