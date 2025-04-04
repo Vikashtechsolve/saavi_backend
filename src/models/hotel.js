@@ -1,19 +1,27 @@
 const mongoose = require("mongoose");
 
-const bookingSchema = new mongoose.Schema({
+const contactDetailsSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  email: { type: String, required: true },
-  checkIn: { type: Date, required: true },
-  checkOut: { type: Date, required: true },
-  cost: { type: Number, required: true },
-  destination: { type: String, required: true },
-  hotelId: { type: String, required: true },
-  rooms: { type: Number, required: true },
-  guests: { type: Number, required: true },
-  bookingDate: { type: Date, required: true },
-  type: { type: String, required: true },
-  promoCode: { type: String, required: false },
+  lastName:  { type: String, required: true },
+  email:     { type: String, required: true },
+  phone:     { type: String, required: true },
+}, { _id: false });
+
+const bookingSchema = new mongoose.Schema({
+  firstName:    { type: String, required: true },
+  lastName:     { type: String, required: true },
+  email:        { type: String, required: true },
+  checkIn:      { type: Date, required: true },
+  checkOut:     { type: Date, required: true },
+  cost:         { type: Number, required: true },
+  destination:  { type: String, required: true },
+  hotelId:      { type: String, required: true },
+  rooms:        { type: Number, required: true },
+  guests:       { type: Number, required: true },
+  bookingDate:  { type: Date, required: true },
+  type:         { type: String, required: true },
+  promoCode:    { type: String, required: false },
+  contactDetails: { type: contactDetailsSchema, required: true }
 });
 
 const ratePlanSchema = new mongoose.Schema({

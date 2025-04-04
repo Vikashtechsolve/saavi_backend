@@ -44,116 +44,149 @@ router.get(
 //   }
 // });
 
-router.post(
-  "/add-booking",
-  [
-    body("firstName").notEmpty().withMessage("First name is required"),
-    body("lastName").notEmpty().withMessage("Last name is required"),
-    body("email").isEmail().withMessage("Valid email is required"),
-    body("checkIn")
-      .notEmpty()
-      .withMessage("Check-in date is required")
-      .isISO8601(),
-    body("checkOut")
-      .notEmpty()
-      .withMessage("Check-out date is required")
-      .isISO8601(),
-    body("userId").notEmpty().withMessage("User ID is required"),
-    body("cost").isNumeric().withMessage("Cost must be a number"),
-    body("destination").notEmpty().withMessage("Destination is required"),
-    body("hotelId").notEmpty().withMessage("Hotel ID is required"),
-    body("rooms").isInt({ min: 1 }).withMessage("Rooms must be at least 1"),
-    body("guests").isInt({ min: 1 }).withMessage("Guests must be at least 1"),
-    body("bookingDate")
-      .notEmpty()
-      .withMessage("Booking date is required")
-      .isISO8601(),
-    body("type").notEmpty().withMessage("Booking type is required"),
-    body("promoCode").optional().isString(),
-  ],
-  addBooking
-);
-
-module.exports = router;
-
-router.post(
-  "/:hotelId/bookings/payment-intent",
-  verifyToken,
-  async (req, res) => {
-    try {
-      const { numberOfNights } = req.body;
-      const hotelId = req.params.hotelId;
-
-      const hotel = await Hotel.findById(hotelId);
-      if (!hotel) {
-        return res.status(400).json({ message: "Hotel not found" });
-      }
-
-      const totalCost = hotel.pricePerNight * numberOfNights;
-
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: totalCost * 100,
-        currency: "gbp",
-        metadata: { hotelId, userId: req.userId },
-      });
-
-      if (!paymentIntent.client_secret) {
-        return res
-          .status(500)
-          .json({ message: "Error creating payment intent" });
-      }
-
-      res.send({
-        paymentIntentId: paymentIntent.id,
-        clientSecret: paymentIntent.client_secret,
-        totalCost,
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "Something went wrong" });
-    }
-  }
-);
-
-router.post("/:hotelId/bookings", verifyToken, async (req, res) => {
+router.post("/add-booking", async (req, res) => {
   try {
-    const { paymentIntentId } = req.body;
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const requiredFields = [
+      'firstName', 'lastName', 'email',
+      'checkIn', 'checkOut', 'cost', 'destination',
+      'hotelId', 'rooms', 'guests',
+      'bookingDate', 'type', 'contactDetails'
+    ];
 
-    if (!paymentIntent) {
-      return res.status(400).json({ message: "Payment intent not found" });
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ error: `${field} is required` });
+      }
     }
 
-    if (
-      paymentIntent.metadata.hotelId !== req.params.hotelId ||
-      paymentIntent.metadata.userId !== req.userId
-    ) {
-      return res.status(400).json({ message: "Payment intent mismatch" });
+    // Validate contactDetails subfields
+    const contact = req.body.contactDetails;
+    const contactFields = ['firstName', 'lastName', 'email', 'phone'];
+    for (const field of contactFields) {
+      if (!contact[field]) {
+        return res.status(400).json({ error: `contactDetails.${field} is required` });
+      }
     }
 
-    if (paymentIntent.status !== "succeeded") {
-      return res.status(400).json({
-        message: `Payment intent not succeeded. Status: ${paymentIntent.status}`,
-      });
-    }
+    const booking = new Booking(req.body);
+    await booking.save();
+    res.status(201).json({ message: 'Booking successful', booking });
 
-    const newBooking = { ...req.body, userId: req.userId };
-
-    const hotel = await Hotel.findOneAndUpdate(
-      { _id: req.params.hotelId },
-      { $push: { bookings: newBooking } }
-    );
-
-    if (!hotel) {
-      return res.status(400).json({ message: "Hotel not found" });
-    }
-
-    await hotel.save();
-    res.status(200).send();
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Something went wrong" });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
+// router.post(
+//   "/add-booking",
+//   [
+//     body("firstName").notEmpty().withMessage("First name is required"),
+//     body("lastName").notEmpty().withMessage("Last name is required"),
+//     body("email").isEmail().withMessage("Valid email is required"),
+//     body("checkIn")
+//       .notEmpty()
+//       .withMessage("Check-in date is required")
+//       .isISO8601(),
+//     body("checkOut")
+//       .notEmpty()
+//       .withMessage("Check-out date is required")
+//       .isISO8601(),
+//     body("userId").notEmpty().withMessage("User ID is required"),
+//     body("cost").isNumeric().withMessage("Cost must be a number"),
+//     body("destination").notEmpty().withMessage("Destination is required"),
+//     body("hotelId").notEmpty().withMessage("Hotel ID is required"),
+//     body("rooms").isInt({ min: 1 }).withMessage("Rooms must be at least 1"),
+//     body("guests").isInt({ min: 1 }).withMessage("Guests must be at least 1"),
+//     body("bookingDate")
+//       .notEmpty()
+//       .withMessage("Booking date is required")
+//       .isISO8601(),
+//     body("type").notEmpty().withMessage("Booking type is required"),
+//     body("promoCode").optional().isString(),
+//   ],
+//   addBooking
+// );
 
 module.exports = router;
+
+// router.post(
+//   "/:hotelId/bookings/payment-intent",
+//   verifyToken,
+//   async (req, res) => {
+//     try {
+//       const { numberOfNights } = req.body;
+//       const hotelId = req.params.hotelId;
+
+//       const hotel = await Hotel.findById(hotelId);
+//       if (!hotel) {
+//         return res.status(400).json({ message: "Hotel not found" });
+//       }
+
+//       const totalCost = hotel.pricePerNight * numberOfNights;
+
+//       const paymentIntent = await stripe.paymentIntents.create({
+//         amount: totalCost * 100,
+//         currency: "gbp",
+//         metadata: { hotelId, userId: req.userId },
+//       });
+
+//       if (!paymentIntent.client_secret) {
+//         return res
+//           .status(500)
+//           .json({ message: "Error creating payment intent" });
+//       }
+
+//       res.send({
+//         paymentIntentId: paymentIntent.id,
+//         clientSecret: paymentIntent.client_secret,
+//         totalCost,
+//       });
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).json({ message: "Something went wrong" });
+//     }
+//   }
+// );
+
+// router.post("/:hotelId/bookings", verifyToken, async (req, res) => {
+//   try {
+//     const { paymentIntentId } = req.body;
+//     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+//     if (!paymentIntent) {
+//       return res.status(400).json({ message: "Payment intent not found" });
+//     }
+
+//     if (
+//       paymentIntent.metadata.hotelId !== req.params.hotelId ||
+//       paymentIntent.metadata.userId !== req.userId
+//     ) {
+//       return res.status(400).json({ message: "Payment intent mismatch" });
+//     }
+
+//     if (paymentIntent.status !== "succeeded") {
+//       return res.status(400).json({
+//         message: `Payment intent not succeeded. Status: ${paymentIntent.status}`,
+//       });
+//     }
+
+//     const newBooking = { ...req.body, userId: req.userId };
+
+//     const hotel = await Hotel.findOneAndUpdate(
+//       { _id: req.params.hotelId },
+//       { $push: { bookings: newBooking } }
+//     );
+
+//     if (!hotel) {
+//       return res.status(400).json({ message: "Hotel not found" });
+//     }
+
+//     await hotel.save();
+//     res.status(200).send();
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: "Something went wrong" });
+//   }
+// });
+
+// module.exports = router;

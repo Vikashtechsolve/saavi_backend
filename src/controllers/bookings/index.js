@@ -62,14 +62,15 @@ exports.addBooking = async (req, res) => {
 
   try {
     const newBooking = req.body;
+    console.log("testttinnggggggggggggggggggggggggg");
     newBooking.bookingDate = new Date(newBooking.bookingDate); // Ensure date format
 
-    const booking = new Booking(newBooking);
-    await booking.save();
+    // const booking = new Booking(newBooking);
+    // await booking.save();
 
     res.status(201).json({ message: "Booking successful", booking });
   } catch (error) {
-    console.error(error);
+    console.error("Booking error:", error);
     res.status(500).json({ message: "Something went wrong" });
   }
 };
