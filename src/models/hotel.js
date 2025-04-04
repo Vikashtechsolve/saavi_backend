@@ -16,6 +16,15 @@ const bookingSchema = new mongoose.Schema({
   promoCode: { type: String, required: false },
 });
 
+const ratePlanSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  name: { type: String, required: true },
+  code: { type: String, required: true },
+  // icon: { type: String, required: false }, // You can store icon name/path if needed
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+});
+
 const hotelSchema = new mongoose.Schema({
   name: { type: String, required: true },
   homeDescription: { type: String, required: true },
@@ -25,16 +34,11 @@ const hotelSchema = new mongoose.Schema({
   country: { type: String, required: true },
   location: { type: String, required: false },
   description: { type: String, required: true },
-  // roomType: [
-  //   {
-  //     type: {
-  //       type: String,
-  //       enum: ["deluxe", "standard", "suite"],
-  //       required: true,
-  //     },
-  //     price: { type: Number, required: true },
-  //   },
-  // ],
+  amenities: {
+    type: [String],
+    required:true
+  },
+  ratePlans: {type:[ratePlanSchema],required:true},
   type: [{ type: String, required: true }],
   rating: { type: Number, required: false },
   facilities: [{ type: String, required: true }],

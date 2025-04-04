@@ -32,7 +32,13 @@ exports.addHotel = async (req, res) => {
   try {
     const imageFiles = req.files ? req.files["imageFiles"] || [] : [];
     const homeImageFile = req.files ? req.files["homeImageUrl"] : null;
-    const newHotel = req.body;
+    const newHotel = {
+      ...req.body,
+      ratePlans: typeof req.body.ratePlans === "string" ? JSON.parse(req.body.ratePlans) : req.body.ratePlans,
+    };
+
+    console.log("RatePlans type:", typeof newHotel.ratePlans);
+    console.log("RatePlans:", newHotel.ratePlans);
 
     // Upload images
     const imageUrls = await uploadImages(imageFiles);
