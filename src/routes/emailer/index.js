@@ -93,7 +93,7 @@ router.post('/', async (req, res) => {
     // Send mail with defined transport object
     const info = await transporter.sendMail({
       from: process.env.FROM_EMAIL,
-      to:"arnavkul07@gmail.com",
+      to:process.env.SAAVI_EMAIL,
       subject:"New Booking Confirmation",
       text:adminEmailBody,
     });
