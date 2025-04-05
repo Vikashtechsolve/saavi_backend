@@ -13,14 +13,26 @@ const { v2: cloudinary } = require("cloudinary");
 const qs = require('qs');
 const app = express();
 
-app.use(
-  cors(
-  //   {
-  //   origin: [process.env.FRONTEND_URL, process.env.FRONTEND_URL2],
-  //   credentials: true,
-  // }
-)
-);
+const allowedOrigins = [
+  'https://saavihotels.com',
+  'http://localhost:5173',
+  'https://saavi-frontend-admin.vercel.app'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
