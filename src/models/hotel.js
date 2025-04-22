@@ -25,35 +25,40 @@ const bookingSchema = new mongoose.Schema({
 });
 
 const ratePlanSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  name: { type: String, required: true },
-  code: { type: String, required: true },
-  // icon: { type: String, required: false }, // You can store icon name/path if needed
-  description: { type: String, required: true },
-  price: { type: Number, required: true },
+  id: { type: String, required: false },
+  name: { type: String, required: false },
+  price: { type: Number, required: false }
 });
 
+const roomSchema = new mongoose.Schema({
+  type: { type: String, required: false },           // "Standard Room", "Deluxe Room", etc.
+  description: { type: String, required: false },
+  minPrice: { type: Number, required: false },
+  plans: [ratePlanSchema]                            // Array of rate plans (EP, CP, MAP)
+});
+
+
 const hotelSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  homeDescription: { type: String, required: true },
+  name: { type: String, required: false },
+  homeDescription: { type: String, required: false },
   address: { type: String, required: false },
-  city: { type: String, required: true },
+  city: { type: String, required: false },
   state: { type: String, required: false },
-  country: { type: String, required: true },
+  country: { type: String, required: false },
   location: { type: String, required: false },
-  description: { type: String, required: true },
+  description: { type: String, required: false },
   amenities: {
     type: [String],
-    required:true
+    required:false
   },
-  ratePlans: {type:[ratePlanSchema],required:true},
-  type: [{ type: String, required: true }],
+  rooms: {type:[roomSchema],required:false},
+  type: [{ type: String, required: false }],
   rating: { type: Number, required: false },
-  facilities: [{ type: String, required: true }],
-  pricePerNight: { type: Number, required: true },
+  facilities: [{ type: String, required: false }],
+  pricePerNight: { type: Number, required: false },
   homeImageUrl: [{ type: String, required: false }],
-  imageUrls: [{ type: String, required: true }],
-  lastUpdated: { type: Date, required: true },
+  imageUrls: [{ type: String, required: false }],
+  lastUpdated: { type: Date, required: false },
 });
 
 const Hotel = mongoose.model("Hotel", hotelSchema);
