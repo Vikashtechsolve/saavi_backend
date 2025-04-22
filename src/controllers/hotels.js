@@ -34,11 +34,11 @@ exports.addHotel = async (req, res) => {
     const homeImageFile = req.files ? req.files["homeImageUrl"] : null;
     const newHotel = {
       ...req.body,
-      ratePlans: typeof req.body.ratePlans === "string" ? JSON.parse(req.body.ratePlans) : req.body.ratePlans,
+      rooms: typeof req.body.rooms === "string" ? JSON.parse(req.body.rooms) : req.body.rooms,
     };
 
-    console.log("RatePlans type:", typeof newHotel.ratePlans);
-    console.log("RatePlans:", newHotel.ratePlans);
+    console.log("RatePlans type:", typeof newHotel.rooms);
+    console.log("RatePlans:", newHotel.rooms);
 
     // Upload images
     const imageUrls = await uploadImages(imageFiles);
@@ -73,6 +73,11 @@ exports.updateHotel = async (req, res) => {
     if (!ObjectId.isValid(hotelId)) {
       return res.status(400).json({ message: "Invalid Hotel ID format" });
     }
+
+    if (typeof req.body.rooms === 'string') {
+      req.body.rooms = JSON.parse(req.body.rooms);
+    }
+
     // Dynamically update only provided fields
     Object.keys(req.body).forEach((key) => {
       if (req.body[key]) {
@@ -80,6 +85,7 @@ exports.updateHotel = async (req, res) => {
       }
     });
     const objectId = new ObjectId(hotelId);
+
     // Convert `facilities` from string to array if necessary
     if (
       updatedFields.facilities &&
@@ -109,6 +115,8 @@ exports.updateHotel = async (req, res) => {
 
     // Update by the same field we found it with (_id or hotelId)
     const queryField = "_id";
+    console.log("backenddddd",objectId,updatedFields);
+    
     const hotel = await Hotel.findOneAndUpdate(
       { [queryField]: objectId },
       { $set: updatedFields },

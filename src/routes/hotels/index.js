@@ -97,7 +97,7 @@ router.get(
     try {
       const hotel = await Hotel.findById(objectId);
       
-      res.json(hotel);
+      res.status(200).json(hotel);
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Error fetching hotel" });
@@ -248,42 +248,42 @@ router.post(
       .withMessage("Price must be a number"),
 
     // Rate plans validation
-    body("ratePlans")
-      .notEmpty()
-      .withMessage("Rate plans are required")
-      .custom((value, { req }) => {
-        if (typeof value === "string") {
-          try {
-            req.body.ratePlans = JSON.parse(value);
-          } catch (err) {
-            throw new Error("Invalid ratePlans JSON format");
-          }
-        }
+    // body("rooms")
+    //   .notEmpty()
+    //   .withMessage("Rooms are required")
+    //   .custom((value, { req }) => {
+    //     if (typeof value === "string") {
+    //       try {
+    //         req.body.rooms = JSON.parse(value);
+    //       } catch (err) {
+    //         throw new Error("Invalid rooms JSON format");
+    //       }
+    //     }
 
-        const plans = req.body.ratePlans;
+    //     const plans = req.body.rooms;
 
-        if (!Array.isArray(plans) || plans.length === 0) {
-          throw new Error("Rate plans must be a non-empty array");
-        }
+    //     if (!Array.isArray(plans) || plans.length === 0) {
+    //       throw new Error("Rate plans must be a non-empty array");
+    //     }
 
-        const requiredFields = ["id", "name", "code", "description", "price"];
+    //     const requiredFields = ["id", "name", "code", "description", "price"];
 
-        for (const plan of plans) {
-          for (const field of requiredFields) {
-            if (!plan[field] || plan[field].toString().trim() === "") {
-              throw new Error(`Rate plan field '${field}' is required`);
-            }
-          }
+    //     for (const plan of plans) {
+    //       for (const field of requiredFields) {
+    //         if (!plan[field] || plan[field].toString().trim() === "") {
+    //           throw new Error(`Rate plan field '${field}' is required`);
+    //         }
+    //       }
 
-          if (isNaN(Number(plan.price))) {
-            throw new Error("Rate plan 'price' must be a number");
-          }
+    //       if (isNaN(Number(plan.price))) {
+    //         throw new Error("Rate plan 'price' must be a number");
+    //       }
 
-          plan.price = Number(plan.price); // ensure number
-        }
+    //       plan.price = Number(plan.price); // ensure number
+    //     }
 
-        return true;
-      }),
+      //   return true;
+      // }),
   ],
   addHotel
 );
