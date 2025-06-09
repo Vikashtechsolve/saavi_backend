@@ -14,28 +14,29 @@ const qs = require('qs');
 const app = express();
 
 const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
   'https://saavihotels.com',
-  'https://saavihotel.com',
   'https://www.saavihotels.com',
-  // 'http://localhost:5173',
-  // 'http://localhost:5174/',
   'https://saavi-frontend-admin.vercel.app'
 ];
-app.use(cors(
-  {
+
+app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+    console.log('Incoming request origin:', origin);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
     } else {
-      return callback(new Error('Not allowed by CORS'));
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  options:"*",
-  credentials: true
-}
-));
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'ngrok-skip-browser-warning'] // ✅ Add this
+}));
+
+app.options('*', cors()); // handle preflight
+
 
 
 app.use(express.json());
