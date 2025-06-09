@@ -15,26 +15,26 @@ const app = express();
 
 const allowedOrigins = [
   'https://saavihotels.com',
+  'https://saavihotel.com',
   'https://www.saavihotels.com',
   // 'http://localhost:5173',
   // 'http://localhost:5174/',
   'https://saavi-frontend-admin.vercel.app'
 ];
 app.use(cors(
-  { origin: '*' }
-//   {
-//   origin: function (origin, callback) {
-//     // Allow requests with no origin (like mobile apps or curl requests)
-//     if (!origin) return callback(null, true);
-//     if (allowedOrigins.includes(origin)) {
-//       return callback(null, true);
-//     } else {
-//       return callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-//   options:"*",
-//   credentials: true
-// }
+  {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  options:"*",
+  credentials: true
+}
 ));
 
 
