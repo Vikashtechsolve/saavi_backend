@@ -21,6 +21,7 @@ const allowedOrigins = [
   'https://saavi-frontend-admin.vercel.app'
 ];
 app.use(cors(
+  { origin: '*' }
 //   {
 //   origin: function (origin, callback) {
 //     // Allow requests with no origin (like mobile apps or curl requests)
