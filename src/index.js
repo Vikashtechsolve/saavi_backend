@@ -19,7 +19,7 @@ const allowedOrigins = [
   'https://saavihotels.com',
   'https://www.saavihotels.com',
   'https://saavi-frontend-admin.vercel.app',
-  'https://shrpl-frontend-fwo1-git-main-lotlites-projects.vercel.app/'
+  'https://shrpl-frontend-fwo1-git-main-lotlites-projects.vercel.app'
 ];
 
 app.use(cors({
