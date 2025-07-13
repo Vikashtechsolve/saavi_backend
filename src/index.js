@@ -17,6 +17,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'https://saavihotels.com',
+  'https://shrpl.com',
+  'https://www.shrpl.com',
   'https://www.saavihotels.com',
   'https://saavi-frontend-admin.vercel.app',
   'https://shrpl-frontend-fwo1-git-main-lotlites-projects.vercel.app'
